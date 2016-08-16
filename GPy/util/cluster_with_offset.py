@@ -190,10 +190,9 @@ def cluster(data,inputs,verbose=False,parallel=False):
                 pairloglikes = np.delete(pairloglikes,top[1],1)
                 loglikes[top[0]] = None
                 loglikes = np.delete(loglikes,top[1])
-
-            if verbose:
-                t1 = time.time()
-                print('\nloop time',t1-t0)
+                if verbose:
+                    t1 = time.time()
+                    print('\nloop time',t1-t0)
             else:
                 break
 
