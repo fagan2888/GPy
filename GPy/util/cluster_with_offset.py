@@ -4,6 +4,7 @@ import GPy
 import numpy as np
 import sys #so I can print dots
 import time
+import os
 from joblib import Parallel, delayed
 
 def get_log_likelihood(inputs,data,clust):
@@ -114,9 +115,14 @@ def cluster(data,inputs,verbose=False,parallel=False,cores=1,batch=1):
     """
     N=len(data)
     if verbose & parallel:
+        try:
+            omp_num_threads = os.environ['OMP_NUM_THREADS']
+        except KeyError:
+            omp_num_threads = 'unset'
         print('parallel processing')
-        print('{0} cores'.format(cores))
-        print('{0} batch size'.format(batch))
+        print('{0} cores : This is the number of cores your job will be split over'.format(cores))
+        print('{0} batch size : The number of atomic tasks to dispatch at once to each worker. '.format(batch))
+        print('{0} OMP_NUM_THREADS : An environment variable that affects number of cores for OpenMP-accelerated functions. (e.g.Intel MKL)'.format(omp_num_threads))
     if verbose & (not parallel):
         print('serial processing')
 
