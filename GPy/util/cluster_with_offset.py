@@ -93,7 +93,7 @@ def cluster_loglike(clusti,data,inputs,pairloglikes):
         results = [get_log_likelihood_offset(inputs,data,[clusti,clustj])  for clustj in range(clusti) if np.isnan(pairloglikes[clusti,clustj])]
         return(results)
 
-def cluster(data,inputs,verbose=False,parallel=False):
+def cluster(data,inputs,verbose=False,parallel=False,cores=1,batch=1):
     """Clusters data
 
     Using the new offset model, this method uses a greedy algorithm to cluster
@@ -105,12 +105,18 @@ def cluster(data,inputs,verbose=False,parallel=False):
     arguments:
     inputs -- the 'X's in a list, one item per cluster
     data -- the 'Y's in a list, one item per cluster
+    verbose -- True or False. If True, gives additional information on the algorithm.
+    parallel -- True or False. If True, runs the algorithm in paralllel using joblib
+    cores -- How many cores to parallelise over. Ignored if parallel is False
+    batch -- A joblib parallelisation argument. Ignored if parallel is False.
 
     returns a list of the clusters.
     """
     N=len(data)
     if verbose & parallel:
         print('parallel processing')
+        print('{0} cores'.format(cores))
+        print('{0} batch size'.format(batch))
     if verbose & (not parallel):
         print('serial processing')
 
@@ -127,8 +133,7 @@ def cluster(data,inputs,verbose=False,parallel=False):
     pairoffset = np.zeros([len(active),len(active)])
 
     it = 0
-    # TODO: Make the parallel settings settable via function call
-    with Parallel(n_jobs=16,batch_size=1) as parallel_pool:
+    with Parallel(n_jobs=cores,batch_size=batch) as parallel_pool:
         while True:
 
             if verbose:
