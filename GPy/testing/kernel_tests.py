@@ -421,6 +421,21 @@ class KernelGradientTestsContinuous(unittest.TestCase):
         k.randomize()
         self.assertTrue(check_kernel_gradient_functions(k, X=self.X, X2=self.X2, verbose=verbose))
 
+    def test_OU(self):
+        k = GPy.kern.OU(self.D-1, ARD=True)
+        k.randomize()
+        self.assertTrue(check_kernel_gradient_functions(k, X=self.X, X2=self.X2, verbose=verbose))
+
+    def test_RatQuad(self):
+        k = GPy.kern.RatQuad(self.D-1, ARD=True)
+        k.randomize()
+        self.assertTrue(check_kernel_gradient_functions(k, X=self.X, X2=self.X2, verbose=verbose))
+
+    def test_ExpQuad(self):
+        k = GPy.kern.ExpQuad(self.D-1, ARD=True)
+        k.randomize()
+        self.assertTrue(check_kernel_gradient_functions(k, X=self.X, X2=self.X2, verbose=verbose))
+
     def test_integral(self):
         k = GPy.kern.Integral(1)
         k.randomize()
@@ -476,6 +491,41 @@ class KernelGradientTestsContinuous(unittest.TestCase):
         k = GPy.kern.Precomputed(1, cov)
         k.randomize()
         self.assertTrue(check_kernel_gradient_functions(k, X=X, X2=X2, verbose=verbose, fixed_X_dims=[0]))
+
+    def test_basis_func_linear_slope(self):
+        start_stop = np.random.uniform(self.X.min(0), self.X.max(0), (4, self.X.shape[1])).T
+        start_stop.sort(axis=1)
+        ks = []
+        for i in range(start_stop.shape[0]):
+            start, stop = np.split(start_stop[i], 2)
+            ks.append(GPy.kern.LinearSlopeBasisFuncKernel(1, start, stop, ARD=i%2==0, active_dims=[i]))
+        k = GPy.kern.Add(ks)
+        self.assertTrue(check_kernel_gradient_functions(k, X=self.X, X2=self.X2, verbose=verbose))
+
+    def test_basis_func_changepoint(self):
+        points = np.random.uniform(self.X.min(0), self.X.max(0), (self.X.shape[1]))
+        ks = []
+        for i in range(points.shape[0]):
+            ks.append(GPy.kern.ChangePointBasisFuncKernel(1, points[i], ARD=i%2==0, active_dims=[i]))
+        k = GPy.kern.Add(ks)
+        self.assertTrue(check_kernel_gradient_functions(k, X=self.X, X2=self.X2, verbose=verbose))
+
+    def test_basis_func_poly(self):
+        ks = []
+        for i in range(self.X.shape[1]):
+            ks.append(GPy.kern.PolynomialBasisFuncKernel(1, 5, ARD=i%2==0, active_dims=[i]))
+        k = GPy.kern.Add(ks)
+        self.assertTrue(check_kernel_gradient_functions(k, X=self.X, X2=self.X2, verbose=verbose))
+
+    def test_basis_func_domain(self):
+        start_stop = np.random.uniform(self.X.min(0), self.X.max(0), (4, self.X.shape[1])).T
+        start_stop.sort(axis=1)
+        ks = []
+        for i in range(start_stop.shape[0]):
+            start, stop = np.split(start_stop[i], 2)
+            ks.append(GPy.kern.DomainKernel(1, start, stop, ARD=i%2==0, active_dims=[i]))
+        k = GPy.kern.Add(ks)
+        self.assertTrue(check_kernel_gradient_functions(k, X=self.X, X2=self.X2, verbose=verbose))
 
 class KernelTestsMiscellaneous(unittest.TestCase):
     def setUp(self):

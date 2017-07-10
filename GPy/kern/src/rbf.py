@@ -7,6 +7,7 @@ from .stationary import Stationary
 from .psi_comp import PSICOMP_RBF, PSICOMP_RBF_GPU
 from ...core import Param
 from paramz.transformations import Logexp
+from .grid_kerns import GridRBF
 
 class RBF(Stationary):
     """
@@ -41,6 +42,7 @@ class RBF(Stationary):
 
     def dK2_drdr_diag(self):
         return -self.variance # as the diagonal of r is always filled with zeros
+    
     def __getstate__(self):
         dc = super(RBF, self).__getstate__()
         if self.useGPU:
@@ -59,6 +61,14 @@ class RBF(Stationary):
     def parameters_changed(self):
         if self.use_invLengthscale: self.lengthscale[:] = 1./np.sqrt(self.inv_l+1e-200)
         super(RBF,self).parameters_changed()
+
+
+    def get_one_dimensional_kernel(self, dim):
+        """
+        Specially intended for Grid regression.
+        """
+        oneDkernel = GridRBF(input_dim=1, variance=self.variance.copy(), originalDimensions=dim)
+        return oneDkernel
 
     #---------------------------------------#
     #             PSI statistics            #

@@ -3,7 +3,6 @@
 import sys
 import numpy as np
 from ...core.parameterization.parameterized import Parameterized
-from paramz.core.observable_array import ObsAr
 from paramz.caching import Cache_this
 from .kernel_slice_operations import KernCallsViaSlicerMeta
 from functools import reduce
@@ -47,11 +46,11 @@ class Kern(Parameterized):
         self.input_dim = int(input_dim)
 
         if active_dims is None:
-            active_dims = np.arange(input_dim)
+            active_dims = np.arange(input_dim, dtype=np.int_)
 
-        self.active_dims = np.asarray(active_dims, np.int_)
+        self.active_dims = np.atleast_1d(np.asarray(active_dims, np.int_))
 
-        self._all_dims_active = np.atleast_1d(self.active_dims).astype(int)
+        self._all_dims_active = np.atleast_1d(self.active_dims).astype(np.int_)
 
         assert self.active_dims.size == self.input_dim, "input_dim={} does not match len(active_dim)={}".format(self.input_dim, self._all_dims_active.size)
 
